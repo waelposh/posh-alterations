@@ -6,7 +6,7 @@
 <title>POSH Alterations Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
+  :root {h
     --gold: #C9A84C; --gold-light: #E8C97A; --gold-pale: #F5EDD6;
     --dark: #1A1612; --dark2: #2C2419; --mid: #6B5B45; --light: #F9F5EE;
     --red: #C0392B; --red-light: #FADBD8; --orange: #E67E22;
@@ -239,7 +239,7 @@
       <button class="btn-add" onclick="openModal()">+ New Alteration</button>
     </div>
     <div class="search-bar">
-      <input class="search-input" type="text" placeholder="Search by customer name or invoice..." oninput="renderTable()" id="searchInput">
+      <input class="search-input" type="text" placeholder="Search by name, phone or invoice..." oninput="renderTable()" id="searchInput">
       <select class="filter-select" onchange="renderTable()" id="filterStatus">
         <option value="">All Statuses</option>
         <option value="Sent to Factory">Sent to Factory</option>
@@ -471,7 +471,7 @@ function renderTable() {
   const search = (document.getElementById('searchInput').value || '').toLowerCase();
   const filter = document.getElementById('filterStatus').value;
   let filtered = data.filter(e => {
-    const ms = !search || e.customer.toLowerCase().includes(search) || (e.invoice || '').toLowerCase().includes(search);
+    const ms = !search || (e.customer || '').toLowerCase().includes(search) || (e.invoice || '').toLowerCase().includes(search) || (e.contact || '').toLowerCase().includes(search) || (e.phone || '').toLowerCase().includes(search);
     const mf = !filter || e.status === filter;
     return ms && mf;
   });
