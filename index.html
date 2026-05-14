@@ -493,6 +493,7 @@ let _mgrPinSetResolve = null;
 
 function checkManagerPin() {
   if (!managerPin) {
+    // No PIN set yet — prompt to create one
     return createManagerPin();
   }
   return new Promise(resolve => {
@@ -555,6 +556,7 @@ function saveMgrPin() {
   localStorage.setItem('posh_manager_pin', p1);
   document.getElementById('mgrPinSetOverlay').classList.remove('open');
   if (_mgrPinSetResolve) { _mgrPinSetResolve(true); _mgrPinSetResolve = null; }
+  pushSettingsToSheets();
   alert('Manager PIN saved successfully.');
 }
 
@@ -574,7 +576,7 @@ function savePinsStorage() {
 
 function checkPin(branchName) {
   const pin = branchPins[branchName];
-  if (!pin) return Promise.resolve(true);
+  if (!pin) return Promise.resolve(true); // no PIN → allow
   return new Promise(resolve => {
     _pinResolve = resolve;
     _pinBranchTarget = branchName;
@@ -608,6 +610,7 @@ function clearPinError() {
   document.getElementById('pinError').textContent = '';
 }
 
+// PIN MANAGEMENT
 function openPinMgmt() {
   const list = document.getElementById('pinMgmtList');
   list.innerHTML = BRANCHES.map((b, i) => {
@@ -634,10 +637,12 @@ function savePinSettings() {
   });
   savePinsStorage();
   closePinMgmt();
-  renderBranchSelector();
+  renderBranchSelector(); // refresh lock icons
+  pushSettingsToSheets();
   alert('Branch PINs saved successfully.');
 }
 
+// ── SETUP ──────────────────────────────────────────────────────
 function saveScriptUrl() {
   const val = document.getElementById('scriptUrlInput').value.trim();
   if (!val.startsWith('https://script.google.com')) { alert('Please paste a valid Google Apps Script URL.'); return; }
@@ -659,12 +664,14 @@ function initSetup() {
   }
 }
 
+// ── SYNC STATUS ──────────────────────────────────────────────
 function setSyncStatus(state, text) {
   const dot = document.getElementById('syncDot');
   dot.className = 'sync-dot ' + state;
   document.getElementById('syncStatus').textContent = text;
 }
 
+// ── GOOGLE SHEETS ────────────────────────────────────────────
 async function loadFromSheets() {
   if (!scriptUrl) return;
   setSyncStatus('syncing', 'Syncing with Google Sheets...');
@@ -673,6 +680,17 @@ async function loadFromSheets() {
     const d = await res.json();
     if (d.success && d.entries) {
       allEntries = d.entries;
+      // Apply PIN settings from Sheets (overrides localStorage)
+      if (d.settings) {
+        if (d.settings.managerPin) {
+          managerPin = d.settings.managerPin;
+          localStorage.setItem('posh_manager_pin', managerPin);
+        }
+        if (d.settings.branchPins) {
+          branchPins = d.settings.branchPins;
+          localStorage.setItem('posh_pins', JSON.stringify(branchPins));
+        }
+      }
       setSyncStatus('ok', 'Synced with Google Sheets — ' + new Date().toLocaleTimeString());
     } else {
       setSyncStatus('err', 'Sync error: ' + (d.error || 'unknown'));
@@ -708,8 +726,25 @@ async function pushToSheets(action, payload) {
   }
 }
 
+async function pushSettingsToSheets() {
+  if (!scriptUrl) return;
+  try {
+    await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'saveSettings',
+        settings: { managerPin: managerPin || '', branchPins: branchPins }
+      })
+    });
+  } catch (err) {
+    // silent — settings saved locally at minimum
+  }
+}
+
 function manualSync() { loadFromSheets(); }
 
+// ── DATA ─────────────────────────────────────────────────────
 function getBranchEntries(branchIdx) {
   return allEntries.filter(e => e.branch === BRANCHES[branchIdx]);
 }
@@ -738,6 +773,7 @@ function statusBadge(status, overdue) {
   return '<span class="badge ' + (map[status] || 'badge-sent') + '">' + (icons[status] || '') + ' ' + status + '</span>';
 }
 
+// ── UI ───────────────────────────────────────────────────────
 function renderBranchSelector() {
   document.getElementById('branchSelector').innerHTML = BRANCHES.map((b, i) => {
     const hasPin = !!branchPins[b];
@@ -800,6 +836,7 @@ function renderTable() {
   }).join('');
 }
 
+// ── MODAL ────────────────────────────────────────────────────
 function openModal() {
   editingId = null;
   document.getElementById('modalTitleText').textContent = 'New Alteration';
@@ -875,6 +912,7 @@ async function saveEntry() {
   await pushToSheets('save', entry);
 }
 
+// ── MANAGER DASHBOARD ────────────────────────────────────────
 function renderManagerDashboard() {
   document.getElementById('branchOverview').innerHTML = BRANCHES.map((b, i) => {
     const entries = getBranchEntries(i);
@@ -926,7 +964,7 @@ function switchToBranch(idx) {
 async function switchMode(mode) {
   if (mode === 'manager') {
     const ok = await checkManagerPin();
-    if (!ok) return;
+    if (!ok) return; // cancelled or wrong PIN
   }
   currentMode = mode;
   document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i === 0 && mode === 'branch') || (i === 1 && mode === 'manager')));
@@ -935,6 +973,7 @@ async function switchMode(mode) {
   if (mode === 'manager') renderManagerDashboard();
 }
 
+// ── AI ────────────────────────────────────────────────────────
 async function callClaude(prompt) {
   if (!anthropicKey) {
     return { error: '⚠️ No API key set. Enter your Claude API key in the top bar and click Save.' };
@@ -998,24 +1037,22 @@ async function runManagerAI() {
   }).join('\n\n');
 
   const prompt = 'You are an area manager assistant for POSH Abaya UAE. Today: ' + todayStr() + '\n\n' + summary +
-    '\n\nProvide:\n1. Overall network status\n2. Most critical branch and why\n3. Urgent actions by priority\n4. Pattern observation\n5. One strategic recommendation\nMax 10 lines. Direct and action-oriented.';
+    '\n\nProvide:\n1. Overall network status\n2. Most critical branch and why\n3. Top 3 actions needed\n4. One systemic recommendation\nBe concise and direct.';
 
   const result = await callClaude(prompt);
   out.textContent = result.error || result.text;
   btn.disabled = false;
 }
 
-window.onclick = function(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-  if (e.target === document.getElementById('pinMgmtOverlay')) closePinMgmt();
-  if (e.target === document.getElementById('mgrPinOverlay')) cancelMgrPin();
-  if (e.target === document.getElementById('mgrPinSetOverlay')) cancelMgrPinSet();
-};
-
-updateApiKeyStatus();
-initSetup();
-renderBranchSelector();
-selectBranch(0);
+// ── INIT ─────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  updateApiKeyStatus();
+  renderBranchSelector();
+  renderStats();
+  renderTable();
+  selectBranch(0);
+  initSetup();
+});
 </script>
 </body>
 </html>
