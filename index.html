@@ -6,327 +6,424 @@
 <title>POSH Alterations Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {h
-    --gold: #C9A84C; --gold-light: #E8C97A; --gold-pale: #F5EDD6;
-    --dark: #1A1612; --dark2: #2C2419; --mid: #6B5B45; --light: #F9F5EE;
-    --red: #C0392B; --red-light: #FADBD8; --orange: #E67E22;
-    --green: #1E8449; --green-light: #D5F5E3; --blue: #2471A3; --blue-light: #D6EAF8;
-    --sent-bg: #F0EBE3; --sent: #7D6E56;
-    --radius: 12px; --shadow: 0 4px 24px rgba(26,22,18,0.10); --shadow-lg: 0 8px 40px rgba(26,22,18,0.18);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--light); color: var(--dark); min-height: 100vh; }
+:root {
+--gold: #C9A84C; --gold-light: #E8C97A; --gold-pale: #F5EDD6;
+--dark: #1A1612; --dark2: #2C2419; --mid: #6B5B45; --light: #F9F5EE;
+--red: #C0392B; --red-light: #FADBD8; --orange: #E67E22;
+--green: #1E8449; --green-light: #D5F5E3; --blue: #2471A3; --blue-light: #D6EAF8;
+--sent-bg: #F0EBE3; --sent: #7D6E56;
+--radius: 12px; --shadow: 0 4px 24px rgba(26,22,18,0.10); --shadow-lg: 0 8px 40px rgba(26,22,18,0.18);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--light); color: var(--dark); min-height: 100vh; }
 
-  /* SETUP BANNER */
-  .setup-banner {
-    background: #FFF3CD; border-bottom: 2px solid #F0AD00;
-    padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  }
-  .setup-banner.hidden { display: none; }
-  .setup-text { font-size: 13px; color: #7D5A00; font-weight: 500; }
-  .setup-text strong { color: #4A3500; }
-  .setup-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .setup-input {
-    padding: 7px 14px; border: 1.5px solid #F0AD00; border-radius: 7px;
-    font-family: 'DM Sans', sans-serif; font-size: 13px; width: 380px; outline: none; background: white;
-  }
-  .setup-input:focus { border-color: var(--gold); }
-  .btn-setup {
-    background: #F0AD00; color: #4A3500; border: none; padding: 7px 18px;
-    border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    font-weight: 700; cursor: pointer; white-space: nowrap;
-  }
-  .btn-setup:hover { background: #E09D00; }
+/* SETUP BANNER */
+.setup-banner {
+background: #FFF3CD; border-bottom: 2px solid #F0AD00;
+padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.setup-banner.hidden { display: none; }
+.setup-text { font-size: 13px; color: #7D5A00; font-weight: 500; }
+.setup-text strong { color: #4A3500; }
+.setup-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.setup-input {
+padding: 7px 14px; border: 1.5px solid #F0AD00; border-radius: 7px;
+font-family: 'DM Sans', sans-serif; font-size: 13px; width: 380px; outline: none; background: white;
+}
+.setup-input:focus { border-color: var(--gold); }
+.btn-setup {
+background: #F0AD00; color: #4A3500; border: none; padding: 7px 18px;
+border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+font-weight: 700; cursor: pointer; white-space: nowrap;
+}
+.btn-setup:hover { background: #E09D00; }
 
-  /* SYNC STATUS */
-  .sync-bar {
-    background: var(--dark2); padding: 6px 32px;
-    display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--mid);
-  }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mid); }
-  .sync-dot.ok { background: var(--green); }
-  .sync-dot.err { background: var(--red); }
-  .sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* SYNC STATUS */
+.sync-bar {
+background: var(--dark2); padding: 6px 32px;
+display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--mid);
+flex-wrap: wrap;
+}
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mid); flex-shrink:0; }
+.sync-dot.ok { background: var(--green); }
+.sync-dot.err { background: var(--red); }
+.sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  .header {
-    background: var(--dark); padding: 0 32px; display: flex; align-items: center;
-    justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
-  }
-  .header-logo { font-family: 'DM Serif Display', serif; color: var(--gold); font-size: 20px; letter-spacing: 3px; }
-  .header-sub { color: var(--mid); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
-  .mode-bar { display: flex; gap: 0; background: var(--dark2); border-radius: 8px; padding: 4px; }
-  .mode-btn {
-    padding: 6px 16px; border: none; background: transparent; color: var(--mid);
-    border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
-  }
-  .mode-btn.active { background: var(--gold); color: var(--dark); }
+/* API KEY area in sync bar */
+.api-key-area { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.api-key-input-small {
+padding: 4px 10px; border: 1px solid rgba(201,168,76,0.25); border-radius: 6px;
+background: rgba(255,255,255,0.06); color: var(--gold-light); font-size: 11px;
+font-family: 'DM Sans', sans-serif; width: 180px; outline: none;
+}
+.api-key-input-small::placeholder { color: #5a4a38; }
+.api-key-input-small:focus { border-color: var(--gold); background: rgba(255,255,255,0.1); }
+.btn-api-save {
+background: var(--gold); color: var(--dark); border: none; padding: 4px 10px;
+border-radius: 5px; font-size: 10px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif;
+white-space: nowrap;
+}
+.btn-api-save:hover { background: var(--gold-light); }
+.api-key-status { font-size: 10px; }
+.api-key-status.set { color: var(--green); }
+.api-key-status.unset { color: #5a4a38; }
 
-  .branch-selector { padding: 24px 32px 0; display: flex; gap: 10px; flex-wrap: wrap; }
-  .branch-chip {
-    padding: 8px 20px; border-radius: 30px; border: 1.5px solid var(--gold-light);
-    background: white; color: var(--dark); font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
-  }
-  .branch-chip:hover { background: var(--gold-pale); }
-  .branch-chip.active { background: var(--gold); border-color: var(--gold); color: var(--dark); font-weight: 600; }
+.header {
+background: var(--dark); padding: 0 32px; display: flex; align-items: center;
+justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100;
+box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+.header-logo { font-family: 'DM Serif Display', serif; color: var(--gold); font-size: 20px; letter-spacing: 3px; }
+.header-sub { color: var(--mid); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.mode-bar { display: flex; gap: 0; background: var(--dark2); border-radius: 8px; padding: 4px; }
+.mode-btn {
+padding: 6px 16px; border: none; background: transparent; color: var(--mid);
+border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px;
+font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;
+}
+.mode-btn.active { background: var(--gold); color: var(--dark); }
 
-  .main { padding: 24px 32px 48px; }
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
-  .stat-card {
-    background: white; border-radius: var(--radius); padding: 20px 24px;
-    box-shadow: var(--shadow); border-left: 4px solid transparent; display: flex; flex-direction: column; gap: 4px;
-  }
-  .stat-card.overdue { border-left-color: var(--red); }
-  .stat-card.pending { border-left-color: var(--orange); }
-  .stat-card.ready { border-left-color: var(--green); }
-  .stat-card.total { border-left-color: var(--gold); }
-  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); font-weight: 600; }
-  .stat-value { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--dark); line-height: 1; }
-  .stat-sub { font-size: 12px; color: var(--mid); }
+.branch-selector { padding: 24px 32px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.branch-chip {
+padding: 8px 20px; border-radius: 30px; border: 1.5px solid var(--gold-light);
+background: white; color: var(--dark); font-size: 13px; font-weight: 500;
+cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 6px;
+}
+.branch-chip:hover { background: var(--gold-pale); }
+.branch-chip.active { background: var(--gold); border-color: var(--gold); color: var(--dark); font-weight: 600; }
+.pin-lock-icon { font-size: 11px; }
 
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .section-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--dark); }
-  .btn-add {
-    background: var(--gold); color: var(--dark); border: none; padding: 10px 22px;
-    border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-  }
-  .btn-add:hover { background: var(--gold-light); transform: translateY(-1px); }
+.main { padding: 24px 32px 48px; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+background: white; border-radius: var(--radius); padding: 20px 24px;
+box-shadow: var(--shadow); border-left: 4px solid transparent; display: flex; flex-direction: column; gap: 4px;
+}
+.stat-card.overdue { border-left-color: var(--red); }
+.stat-card.pending { border-left-color: var(--orange); }
+.stat-card.ready { border-left-color: var(--green); }
+.stat-card.total { border-left-color: var(--gold); }
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--mid); font-weight: 600; }
+.stat-value { font-family: 'DM Serif Display', serif; font-size: 36px; color: var(--dark); line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--mid); }
 
-  .table-wrap { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 800px; }
-  thead { background: var(--dark); }
-  thead th { padding: 14px 16px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold-light); font-weight: 600; }
-  tbody tr { border-bottom: 1px solid #F0EBE3; transition: background 0.15s; }
-  tbody tr:hover { background: var(--gold-pale); }
-  tbody tr:last-child { border-bottom: none; }
-  td { padding: 14px 16px; font-size: 13px; color: var(--dark); vertical-align: middle; }
-  .td-customer { font-weight: 600; }
-  .td-contact { color: var(--mid); font-size: 12px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.section-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--dark); }
+.btn-add {
+background: var(--gold); color: var(--dark); border: none; padding: 10px 22px;
+border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+}
+.btn-add:hover { background: var(--gold-light); transform: translateY(-1px); }
 
-  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-  .badge-sent { background: var(--sent-bg); color: var(--sent); }
-  .badge-progress { background: var(--blue-light); color: var(--blue); }
-  .badge-ready { background: var(--green-light); color: var(--green); }
-  .badge-delivered { background: #EAF7ED; color: #145A32; }
-  .badge-overdue { background: var(--red-light); color: var(--red); }
+.table-wrap { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 800px; }
+thead { background: var(--dark); }
+thead th { padding: 14px 16px; text-align: left; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--gold-light); font-weight: 600; }
+tbody tr { border-bottom: 1px solid #F0EBE3; transition: background 0.15s; }
+tbody tr:hover { background: var(--gold-pale); }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 14px 16px; font-size: 13px; color: var(--dark); vertical-align: middle; }
+.td-customer { font-weight: 600; }
+.td-contact { color: var(--mid); font-size: 12px; }
 
-  tr.overdue-row { background: #FFF8F7; }
-  .overdue-flag { font-size: 10px; background: var(--red); color: white; padding: 2px 7px; border-radius: 4px; font-weight: 700; margin-left: 6px; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.badge-sent { background: var(--sent-bg); color: var(--sent); }
+.badge-progress { background: var(--blue-light); color: var(--blue); }
+.badge-ready { background: var(--green-light); color: var(--green); }
+.badge-delivered { background: #EAF7ED; color: #145A32; }
+.badge-overdue { background: var(--red-light); color: var(--red); }
 
-  .action-btns { display: flex; gap: 8px; }
-  .btn-edit, .btn-delete { padding: 5px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
-  .btn-edit { background: var(--gold-pale); color: var(--dark); }
-  .btn-edit:hover { background: var(--gold-light); }
-  .btn-delete { background: var(--red-light); color: var(--red); }
-  .btn-delete:hover { background: #F1948A; color: white; }
+tr.overdue-row { background: #FFF8F7; }
+.overdue-flag { font-size: 10px; background: var(--red); color: white; padding: 2px 7px; border-radius: 4px; font-weight: 700; margin-left: 6px; }
 
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,22,18,0.6); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-  .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 16px; padding: 32px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: slideUp 0.25s ease; }
-  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 24px; color: var(--dark); }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  label { font-size: 12px; font-weight: 600; color: var(--mid); letter-spacing: 0.5px; text-transform: uppercase; }
-  input, select, textarea { padding: 10px 14px; border: 1.5px solid #E8DFD0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--dark); background: var(--light); transition: border-color 0.2s; outline: none; }
-  input:focus, select:focus, textarea:focus { border-color: var(--gold); background: white; }
-  textarea { resize: vertical; min-height: 72px; }
-  .modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
-  .btn-save { background: var(--gold); color: var(--dark); border: none; padding: 11px 28px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .btn-save:hover { background: var(--gold-light); }
-  .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
-  .btn-cancel { background: var(--light); color: var(--mid); border: 1.5px solid #E8DFD0; padding: 11px 22px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; }
+.action-btns { display: flex; gap: 8px; }
+.btn-edit, .btn-delete { padding: 5px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.btn-edit { background: var(--gold-pale); color: var(--dark); }
+.btn-edit:hover { background: var(--gold-light); }
+.btn-delete { background: var(--red-light); color: var(--red); }
+.btn-delete:hover { background: #F1948A; color: white; }
 
-  .ai-panel { background: var(--dark); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 28px; position: relative; overflow: hidden; }
-  .ai-panel::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%); border-radius: 50%; }
-  .ai-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .ai-panel-title { font-family: 'DM Serif Display', serif; color: var(--gold); font-size: 18px; display: flex; align-items: center; gap: 10px; }
-  .ai-badge { background: var(--gold); color: var(--dark); font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 2px 7px; border-radius: 4px; }
-  .btn-ai { background: var(--gold); color: var(--dark); border: none; padding: 9px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .btn-ai:hover { background: var(--gold-light); }
-  .btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
-  .ai-output { color: #D4C4A8; font-size: 14px; line-height: 1.7; min-height: 48px; white-space: pre-wrap; }
-  .ai-loading { display: flex; align-items: center; gap: 8px; color: var(--gold-light); font-size: 13px; }
-  .spinner { width: 16px; height: 16px; border: 2px solid rgba(201,168,76,0.3); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* MODALS */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,22,18,0.6); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: white; border-radius: 16px; padding: 32px; width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: slideUp 0.25s ease; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; margin-bottom: 24px; color: var(--dark); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full { grid-column: 1 / -1; }
+label { font-size: 12px; font-weight: 600; color: var(--mid); letter-spacing: 0.5px; text-transform: uppercase; }
+input, select, textarea { padding: 10px 14px; border: 1.5px solid #E8DFD0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--dark); background: var(--light); transition: border-color 0.2s; outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--gold); background: white; }
+textarea { resize: vertical; min-height: 72px; }
+.modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+.btn-save { background: var(--gold); color: var(--dark); border: none; padding: 11px 28px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; }
+.btn-save:hover { background: var(--gold-light); }
+.btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-cancel { background: var(--light); color: var(--mid); border: 1.5px solid #E8DFD0; padding: 11px 22px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; }
 
-  .branch-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
-  .branch-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border-top: 3px solid var(--gold); cursor: pointer; transition: all 0.2s; }
-  .branch-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-  .branch-card-name { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 12px; }
-  .branch-card-stats { display: flex; gap: 10px; flex-wrap: wrap; }
-  .bstat { font-size: 12px; font-weight: 600; }
-  .bstat-overdue { color: var(--red); }
-  .bstat-pending { color: var(--orange); }
-  .bstat-ready { color: var(--green); }
-  .bstat-total { color: var(--mid); }
+/* PIN MODAL */
+.pin-modal { max-width: 380px; text-align: center; }
+.pin-lock-big { font-size: 48px; margin-bottom: 8px; }
+.pin-branch-label { color: var(--gold); font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+.pin-subtitle { color: var(--mid); font-size: 13px; margin-bottom: 20px; line-height: 1.5; }
+.pin-field {
+font-size: 22px; letter-spacing: 10px; text-align: center; padding: 12px 20px;
+border: 2px solid #E8DFD0; border-radius: 10px; width: 100%; font-family: monospace;
+background: var(--light); outline: none;
+}
+.pin-field:focus { border-color: var(--gold); background: white; }
+.pin-error-msg { color: var(--red); font-size: 13px; min-height: 20px; margin-top: 8px; }
 
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--mid); }
-  .empty-icon { font-size: 48px; margin-bottom: 16px; }
-  .empty-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 8px; color: var(--dark); }
-  .empty-sub { font-size: 14px; }
+/* PIN MANAGEMENT */
+.pin-mgmt-list { margin: 16px 0; display: flex; flex-direction: column; gap: 10px; }
+.pin-mgmt-row {
+display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+background: var(--light); border-radius: 10px; border: 1px solid #E8DFD0;
+}
+.pin-mgmt-branch { flex: 1; font-size: 14px; font-weight: 500; color: var(--dark); }
+.pin-mgmt-input {
+width: 120px; padding: 8px 12px; border: 1.5px solid #E8DFD0; border-radius: 8px;
+font-size: 14px; text-align: center; font-family: monospace; letter-spacing: 4px;
+background: white;
+}
+.pin-mgmt-input:focus { border-color: var(--gold); outline: none; }
+.pin-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pin-status-dot.active { background: var(--green); }
+.pin-status-dot.inactive { background: #D5D5D5; }
+.pin-hint { font-size: 12px; color: var(--mid); margin-bottom: 4px; }
 
-  .search-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
-  .search-input { flex: 1; padding: 10px 16px; border: 1.5px solid #E8DFD0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: white; outline: none; }
-  .search-input:focus { border-color: var(--gold); }
-  .filter-select { padding: 10px 14px; border: 1.5px solid #E8DFD0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: white; outline: none; cursor: pointer; color: var(--dark); }
+/* AI PANEL */
+.ai-panel { background: var(--dark); border-radius: var(--radius); padding: 24px 28px; margin-bottom: 28px; position: relative; overflow: hidden; }
+.ai-panel::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: radial-gradient(circle, rgba(201,168,76,0.2) 0%, transparent 70%); border-radius: 50%; }
+.ai-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.ai-panel-title { font-family: 'DM Serif Display', serif; color: var(--gold); font-size: 18px; display: flex; align-items: center; gap: 10px; }
+.ai-badge { background: var(--gold); color: var(--dark); font-size: 9px; font-weight: 800; letter-spacing: 1px; padding: 2px 7px; border-radius: 4px; }
+.btn-ai { background: var(--gold); color: var(--dark); border: none; padding: 9px 20px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; }
+.btn-ai:hover { background: var(--gold-light); }
+.btn-ai:disabled { opacity: 0.5; cursor: not-allowed; }
+.ai-output { color: #D4C4A8; font-size: 14px; line-height: 1.7; min-height: 48px; white-space: pre-wrap; }
+.ai-loading { display: flex; align-items: center; gap: 8px; color: var(--gold-light); font-size: 13px; }
+.spinner { width: 16px; height: 16px; border: 2px solid rgba(201,168,76,0.3); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .hidden { display: none !important; }
-  .page { display: none; }
-  .page.active { display: block; }
+.branch-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.branch-card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); border-top: 3px solid var(--gold); cursor: pointer; transition: all 0.2s; }
+.branch-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.branch-card-name { font-family: 'DM Serif Display', serif; font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.branch-card-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.bstat { font-size: 12px; font-weight: 600; }
+.bstat-overdue { color: var(--red); }
+.bstat-pending { color: var(--orange); }
+.bstat-ready { color: var(--green); }
+.bstat-total { color: var(--mid); }
 
-  @media (max-width: 768px) {
-    .header { padding: 0 16px; }
-    .main { padding: 16px; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .branch-overview { grid-template-columns: 1fr 1fr; }
-    .branch-selector { padding: 16px 16px 0; }
-    .form-grid { grid-template-columns: 1fr; }
-    .mode-btn { font-size: 11px; padding: 6px 10px; }
-    .setup-input { width: 100%; }
-    .sync-bar { padding: 6px 16px; }
-  }
+.empty-state { text-align: center; padding: 60px 20px; color: var(--mid); }
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-family: 'DM Serif Display', serif; font-size: 20px; margin-bottom: 8px; color: var(--dark); }
+.empty-sub { font-size: 14px; }
+
+.search-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+.search-input { flex: 1; padding: 10px 16px; border: 1.5px solid #E8DFD0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: white; outline: none; }
+.search-input:focus { border-color: var(--gold); }
+.filter-select { padding: 10px 14px; border: 1.5px solid #E8DFD0; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: white; outline: none; cursor: pointer; color: var(--dark); }
+
+.mgr-actions-row { display: flex; gap: 10px; }
+.btn-mgr { background: var(--dark2); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.2); padding: 9px 18px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-mgr:hover { background: var(--dark); border-color: var(--gold); color: var(--gold); }
+
+.hidden { display: none !important; }
+.page { display: none; }
+.page.active { display: block; }
+
+@media (max-width: 768px) {
+.header { padding: 0 16px; }
+.main { padding: 16px; }
+.stats-row { grid-template-columns: repeat(2, 1fr); }
+.branch-overview { grid-template-columns: 1fr 1fr; }
+.branch-selector { padding: 16px 16px 0; }
+.form-grid { grid-template-columns: 1fr; }
+.mode-btn { font-size: 11px; padding: 6px 10px; }
+.setup-input { width: 100%; }
+.sync-bar { padding: 6px 16px; }
+.api-key-area { width: 100%; margin-left: 0; }
+}
 </style>
 </head>
 <body>
 
 <!-- SETUP BANNER -->
 <div class="setup-banner hidden" id="setupBanner">
-  <div class="setup-text"><strong>&#9888; Setup Required:</strong> Paste your Google Apps Script Web App URL to enable Google Sheets sync.</div>
-  <div class="setup-input-row">
-    <input class="setup-input" type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
-    <button class="btn-setup" onclick="saveScriptUrl()">Connect</button>
-  </div>
+<div class="setup-text"><strong>&#9888; Setup Required:</strong> Paste your Google Apps Script Web App URL to enable Google Sheets sync.</div>
+<div class="setup-input-row">
+<input class="setup-input" type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+<button class="btn-setup" onclick="saveScriptUrl()">Connect</button>
+</div>
 </div>
 
 <!-- SYNC STATUS BAR -->
 <div class="sync-bar">
-  <div class="sync-dot" id="syncDot"></div>
-  <span id="syncStatus">Not connected to Google Sheets</span>
-  <span style="margin-left:auto;cursor:pointer;color:var(--gold-light);font-size:11px;" onclick="manualSync()">&#8635; Sync now</span>
+<div class="sync-dot" id="syncDot"></div>
+<span id="syncStatus">Not connected to Google Sheets</span>
+<span style="cursor:pointer;color:var(--gold-light);font-size:11px;" onclick="manualSync()">&#8635; Sync now</span>
+<div class="api-key-area">
+<span class="api-key-status" id="apiKeyStatus">&#x2B58; AI: no key</span>
+<input class="api-key-input-small" type="password" id="anthropicKeyInput" placeholder="Claude API Key (for AI)">
+<button class="btn-api-save" onclick="saveApiKey()">Save</button>
+</div>
 </div>
 
 <div class="header">
-  <div>
-    <div class="header-logo">POSH</div>
-    <div class="header-sub">Alterations Tracker</div>
-  </div>
-  <div class="mode-bar">
-    <button class="mode-btn active" onclick="switchMode('branch')">Branch View</button>
-    <button class="mode-btn" onclick="switchMode('manager')">Manager Dashboard</button>
-  </div>
+<div>
+<div class="header-logo">POSH</div>
+<div class="header-sub">Alterations Tracker</div>
+</div>
+<div class="mode-bar">
+<button class="mode-btn active" onclick="switchMode('branch')">Branch View</button>
+<button class="mode-btn" onclick="switchMode('manager')">Manager Dashboard</button>
+</div>
 </div>
 
 <!-- BRANCH VIEW -->
 <div id="page-branch" class="page active">
-  <div class="branch-selector" id="branchSelector"></div>
-  <div class="main">
-    <div class="ai-panel">
-      <div class="ai-panel-header">
-        <div class="ai-panel-title">&#10022; AI Analysis <span class="ai-badge">POWERED</span></div>
-        <button class="btn-ai" onclick="runAI()" id="aiBtn">Generate Summary</button>
-      </div>
-      <div class="ai-output" id="aiOutput">Click "Generate Summary" to get an AI-powered analysis of current alterations status and delays.</div>
-    </div>
-    <div class="stats-row" id="statsRow"></div>
-    <div class="section-header">
-      <div class="section-title" id="branchTitle">Branch Alterations</div>
-      <button class="btn-add" onclick="openModal()">+ New Alteration</button>
-    </div>
-    <div class="search-bar">
-      <input class="search-input" type="text" placeholder="Search by name, phone or invoice..." oninput="renderTable()" id="searchInput">
-      <select class="filter-select" onchange="renderTable()" id="filterStatus">
-        <option value="">All Statuses</option>
-        <option value="Sent to Factory">Sent to Factory</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Ready for Pickup">Ready for Pickup</option>
-        <option value="Delivered to Customer">Delivered to Customer</option>
-      </select>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Customer</th><th>Invoice</th><th>Item / SKU</th>
-            <th>Date Sent</th><th>Due Date</th><th>Status</th><th>Notes</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-      <div id="emptyState" class="empty-state hidden">
-        <div class="empty-icon">&#9986;</div>
-        <div class="empty-title">No alterations logged</div>
-        <div class="empty-sub">Click "New Alteration" to add the first entry for this branch.</div>
-      </div>
-    </div>
-  </div>
+<div class="branch-selector" id="branchSelector"></div>
+<div class="main">
+<div class="ai-panel">
+<div class="ai-panel-header">
+<div class="ai-panel-title">&#10022; AI Analysis <span class="ai-badge">POWERED</span></div>
+<button class="btn-ai" onclick="runAI()" id="aiBtn">Generate Summary</button>
+</div>
+<div class="ai-output" id="aiOutput">Click "Generate Summary" to get an AI-powered analysis of current alterations status and delays.</div>
+</div>
+<div class="stats-row" id="statsRow"></div>
+<div class="section-header">
+<div class="section-title" id="branchTitle">Branch Alterations</div>
+<button class="btn-add" onclick="openModal()">+ New Alteration</button>
+</div>
+<div class="search-bar">
+<input class="search-input" type="text" placeholder="Search by name, phone or invoice..." oninput="renderTable()" id="searchInput">
+<select class="filter-select" onchange="renderTable()" id="filterStatus">
+<option value="">All Statuses</option>
+<option value="Sent to Factory">Sent to Factory</option>
+<option value="In Progress">In Progress</option>
+<option value="Ready for Pickup">Ready for Pickup</option>
+<option value="Delivered to Customer">Delivered to Customer</option>
+</select>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Customer</th><th>Invoice</th><th>Item / SKU</th>
+<th>Date Sent</th><th>Due Date</th><th>Status</th><th>Notes</th><th>Actions</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+<div id="emptyState" class="empty-state hidden">
+<div class="empty-icon">&#9986;</div>
+<div class="empty-title">No alterations logged</div>
+<div class="empty-sub">Click "New Alteration" to add the first entry for this branch.</div>
+</div>
+</div>
+</div>
 </div>
 
 <!-- MANAGER DASHBOARD -->
 <div id="page-manager" class="page">
-  <div class="main">
-    <div class="ai-panel">
-      <div class="ai-panel-header">
-        <div class="ai-panel-title">&#10022; Manager AI Overview <span class="ai-badge">ALL BRANCHES</span></div>
-        <button class="btn-ai" onclick="runManagerAI()" id="managerAiBtn">Analyze All Branches</button>
-      </div>
-      <div class="ai-output" id="managerAiOutput">Click "Analyze All Branches" to get a full cross-branch delay analysis and recommendations.</div>
-    </div>
-    <div class="section-header" style="margin-bottom:20px;"><div class="section-title">Branch Overview</div></div>
-    <div class="branch-overview" id="branchOverview"></div>
-    <div class="section-header"><div class="section-title">All Overdue Alterations</div></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Branch</th><th>Customer</th><th>Invoice</th><th>Item / SKU</th><th>Date Sent</th><th>Due Date</th><th>Days Overdue</th><th>Status</th><th>Notes</th></tr>
-        </thead>
-        <tbody id="overdueBody"></tbody>
-      </table>
-      <div id="overdueEmpty" class="empty-state hidden">
-        <div class="empty-icon">&#10003;</div>
-        <div class="empty-title">No overdue alterations</div>
-        <div class="empty-sub">All branches are on track.</div>
-      </div>
-    </div>
-  </div>
+<div class="main">
+<div class="ai-panel">
+<div class="ai-panel-header">
+<div class="ai-panel-title">&#10022; Manager AI Overview <span class="ai-badge">ALL BRANCHES</span></div>
+<button class="btn-ai" onclick="runManagerAI()" id="managerAiBtn">Analyze All Branches</button>
+</div>
+<div class="ai-output" id="managerAiOutput">Click "Analyze All Branches" to get a full cross-branch delay analysis and recommendations.</div>
+</div>
+<div class="section-header" style="margin-bottom:20px;">
+<div class="section-title">Branch Overview</div>
+<div class="mgr-actions-row">
+<button class="btn-mgr" onclick="openPinMgmt()">&#128274; Manage Branch PINs</button>
+</div>
+</div>
+<div class="branch-overview" id="branchOverview"></div>
+<div class="section-header"><div class="section-title">All Overdue Alterations</div></div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>Branch</th><th>Customer</th><th>Invoice</th><th>Item / SKU</th><th>Date Sent</th><th>Due Date</th><th>Days Overdue</th><th>Status</th><th>Notes</th></tr>
+</thead>
+<tbody id="overdueBody"></tbody>
+</table>
+<div id="overdueEmpty" class="empty-state hidden">
+<div class="empty-icon">&#10003;</div>
+<div class="empty-title">No overdue alterations</div>
+<div class="empty-sub">All branches are on track.</div>
+</div>
+</div>
+</div>
 </div>
 
-<!-- MODAL -->
+<!-- ALTERATION MODAL -->
 <div class="modal-overlay" id="modalOverlay">
-  <div class="modal">
-    <div class="modal-title">&#9986; <span id="modalTitleText">New Alteration</span></div>
-    <div class="form-grid">
-      <div class="form-group"><label>Customer Name *</label><input type="text" id="fCustomer" placeholder="Full name"></div>
-      <div class="form-group"><label>Contact Number</label><input type="text" id="fContact" placeholder="+971 XX XXX XXXX"></div>
-      <div class="form-group"><label>Invoice / Order #</label><input type="text" id="fInvoice" placeholder="INV-0000"></div>
-      <div class="form-group"><label>Item Description / SKU</label><input type="text" id="fItem" placeholder="Abaya model or SKU"></div>
-      <div class="form-group"><label>Date Sent to Factory *</label><input type="date" id="fDateSent"></div>
-      <div class="form-group"><label>Due Date (Promised) *</label><input type="date" id="fDueDate"></div>
-      <div class="form-group full"><label>Status *</label>
-        <select id="fStatus">
-          <option value="Sent to Factory">Sent to Factory</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Ready for Pickup">Ready for Pickup</option>
-          <option value="Delivered to Customer">Delivered to Customer</option>
-        </select>
-      </div>
-      <div class="form-group full"><label>Notes / Remarks</label><textarea id="fNotes" placeholder="Any alteration details or special instructions..."></textarea></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveEntry()" id="saveBtn">Save Alteration</button>
-    </div>
-  </div>
+<div class="modal">
+<div class="modal-title">&#9986; <span id="modalTitleText">New Alteration</span></div>
+<div class="form-grid">
+<div class="form-group"><label>Customer Name *</label><input type="text" id="fCustomer" placeholder="Full name"></div>
+<div class="form-group"><label>Contact Number</label><input type="text" id="fContact" placeholder="+971 XX XXX XXXX"></div>
+<div class="form-group"><label>Invoice / Order #</label><input type="text" id="fInvoice" placeholder="INV-0000"></div>
+<div class="form-group"><label>Item Description / SKU</label><input type="text" id="fItem" placeholder="Abaya model or SKU"></div>
+<div class="form-group"><label>Date Sent to Factory *</label><input type="date" id="fDateSent"></div>
+<div class="form-group"><label>Due Date (Promised) *</label><input type="date" id="fDueDate"></div>
+<div class="form-group full"><label>Status *</label>
+<select id="fStatus">
+<option value="Sent to Factory">Sent to Factory</option>
+<option value="In Progress">In Progress</option>
+<option value="Ready for Pickup">Ready for Pickup</option>
+<option value="Delivered to Customer">Delivered to Customer</option>
+</select>
+</div>
+<div class="form-group full"><label>Notes / Remarks</label><textarea id="fNotes" placeholder="Any alteration details or special instructions..."></textarea></div>
+</div>
+<div class="modal-actions">
+<button class="btn-cancel" onclick="closeModal()">Cancel</button>
+<button class="btn-save" onclick="saveEntry()" id="saveBtn">Save Alteration</button>
+</div>
+</div>
+</div>
+
+<!-- PIN VERIFICATION MODAL -->
+<div class="modal-overlay" id="pinOverlay">
+<div class="modal pin-modal">
+<div class="pin-lock-big">&#128274;</div>
+<div class="modal-title" style="text-align:center;margin-bottom:8px;">Branch Protected</div>
+<div class="pin-branch-label" id="pinBranchLabel"></div>
+<div class="pin-subtitle">Enter the PIN to edit or delete records in this branch.</div>
+<input class="pin-field" type="password" id="pinInput" placeholder="&#9679;&#9679;&#9679;&#9679;" maxlength="10" oninput="clearPinError()" onkeydown="if(event.key==='Enter')submitPin()">
+<div class="pin-error-msg" id="pinError"></div>
+<div class="modal-actions" style="justify-content:center;margin-top:20px;">
+<button class="btn-cancel" onclick="cancelPin()">Cancel</button>
+<button class="btn-save" onclick="submitPin()">&#10003; Confirm</button>
+</div>
+</div>
+</div>
+
+<!-- PIN MANAGEMENT MODAL -->
+<div class="modal-overlay" id="pinMgmtOverlay">
+<div class="modal" style="max-width:560px;">
+<div class="modal-title">&#128274; Branch PIN Settings</div>
+<p class="pin-hint">Set a PIN for each branch. Staff must enter the correct PIN to <strong>edit or delete</strong> records. Leave blank for unrestricted access.</p>
+<div class="pin-mgmt-list" id="pinMgmtList"></div>
+<div class="modal-actions">
+<button class="btn-cancel" onclick="closePinMgmt()">Close</button>
+<button class="btn-save" onclick="savePinSettings()">&#128190; Save PINs</button>
+</div>
+</div>
 </div>
 
 <script>
 const BRANCHES = ['Bawadi (Al Ain)', 'Dalma (Abu Dhabi)', 'Bawabat Al Sharq (Abu Dhabi)', 'Matajer Al Juraina (Sharjah)', 'Mizhar (Dubai)'];
-const BRANCH_KEYS = ['bawadi', 'dalma', 'bawabat', 'matajer', 'mizhar'];
 
 let currentBranch = 0;
 let editingId = null;
@@ -334,7 +431,104 @@ let currentMode = 'branch';
 let allEntries = [];
 let scriptUrl = localStorage.getItem('posh_script_url') || 'https://script.google.com/macros/s/AKfycbxgo4SJXtOxz74TE9EJrGnpocugyV5dPZ4xRZBeF8ZDKb8nEkD7A4YdKH6SOLhzuMgM/exec';
 
-// ── SETUP ──────────────────────────────────────────────
+// ── API KEY ──────────────────────────────────────────────────
+let anthropicKey = localStorage.getItem('posh_anthropic_key') || '';
+
+function saveApiKey() {
+  const val = document.getElementById('anthropicKeyInput').value.trim();
+  if (!val) { alert('Please enter your Anthropic API key.'); return; }
+  anthropicKey = val;
+  localStorage.setItem('posh_anthropic_key', val);
+  document.getElementById('anthropicKeyInput').value = '';
+  updateApiKeyStatus();
+}
+
+function updateApiKeyStatus() {
+  const el = document.getElementById('apiKeyStatus');
+  if (anthropicKey) {
+    el.textContent = '● AI: key saved';
+    el.className = 'api-key-status set';
+  } else {
+    el.textContent = '○ AI: no key';
+    el.className = 'api-key-status unset';
+  }
+}
+
+// ── PIN SYSTEM ────────────────────────────────────────────────
+let branchPins = JSON.parse(localStorage.getItem('posh_pins') || '{}');
+let _pinResolve = null;
+let _pinBranchTarget = '';
+
+function savePinsStorage() {
+  localStorage.setItem('posh_pins', JSON.stringify(branchPins));
+}
+
+function checkPin(branchName) {
+  const pin = branchPins[branchName];
+  if (!pin) return Promise.resolve(true);
+  return new Promise(resolve => {
+    _pinResolve = resolve;
+    _pinBranchTarget = branchName;
+    document.getElementById('pinBranchLabel').textContent = branchName;
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinError').textContent = '';
+    document.getElementById('pinOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('pinInput').focus(), 150);
+  });
+}
+
+function submitPin() {
+  const entered = document.getElementById('pinInput').value;
+  const expected = String(branchPins[_pinBranchTarget] || '');
+  if (entered === expected) {
+    document.getElementById('pinOverlay').classList.remove('open');
+    if (_pinResolve) { _pinResolve(true); _pinResolve = null; }
+  } else {
+    document.getElementById('pinError').textContent = '✗ Incorrect PIN — please try again.';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+
+function cancelPin() {
+  document.getElementById('pinOverlay').classList.remove('open');
+  if (_pinResolve) { _pinResolve(false); _pinResolve = null; }
+}
+
+function clearPinError() {
+  document.getElementById('pinError').textContent = '';
+}
+
+function openPinMgmt() {
+  const list = document.getElementById('pinMgmtList');
+  list.innerHTML = BRANCHES.map((b, i) => {
+    const hasPin = !!branchPins[b];
+    return '<div class="pin-mgmt-row">' +
+      '<div class="pin-status-dot ' + (hasPin ? 'active' : 'inactive') + '" id="pinDot_' + i + '"></div>' +
+      '<div class="pin-mgmt-branch">' + b + '</div>' +
+      '<input class="pin-mgmt-input" type="password" id="pinMgmtField_' + i + '" placeholder="No PIN" value="' + (branchPins[b] || '') + '" maxlength="10" ' +
+      'oninput="document.getElementById(\'pinDot_' + i + '\').className=\'pin-status-dot \'+(this.value?\'active\':\'inactive\')">' +
+      '</div>';
+  }).join('');
+  document.getElementById('pinMgmtOverlay').classList.add('open');
+}
+
+function closePinMgmt() {
+  document.getElementById('pinMgmtOverlay').classList.remove('open');
+}
+
+function savePinSettings() {
+  BRANCHES.forEach((b, i) => {
+    const val = document.getElementById('pinMgmtField_' + i).value.trim();
+    if (val) branchPins[b] = val;
+    else delete branchPins[b];
+  });
+  savePinsStorage();
+  closePinMgmt();
+  renderBranchSelector();
+  alert('Branch PINs saved successfully.');
+}
+
 function saveScriptUrl() {
   const val = document.getElementById('scriptUrlInput').value.trim();
   if (!val.startsWith('https://script.google.com')) { alert('Please paste a valid Google Apps Script URL.'); return; }
@@ -356,14 +550,12 @@ function initSetup() {
   }
 }
 
-// ── SYNC STATUS ────────────────────────────────────────
 function setSyncStatus(state, text) {
   const dot = document.getElementById('syncDot');
   dot.className = 'sync-dot ' + state;
   document.getElementById('syncStatus').textContent = text;
 }
 
-// ── GOOGLE SHEETS ──────────────────────────────────────
 async function loadFromSheets() {
   if (!scriptUrl) return;
   setSyncStatus('syncing', 'Syncing with Google Sheets...');
@@ -384,7 +576,7 @@ async function loadFromSheets() {
 }
 
 async function pushToSheets(action, payload) {
-  if (!scriptUrl) return true; // offline mode
+  if (!scriptUrl) return true;
   setSyncStatus('syncing', 'Saving...');
   try {
     const body = action === 'save' ? { action, entry: payload } : { action, id: payload };
@@ -409,7 +601,6 @@ async function pushToSheets(action, payload) {
 
 function manualSync() { loadFromSheets(); }
 
-// ── DATA ───────────────────────────────────────────────
 function getBranchEntries(branchIdx) {
   return allEntries.filter(e => e.branch === BRANCHES[branchIdx]);
 }
@@ -438,11 +629,13 @@ function statusBadge(status, overdue) {
   return '<span class="badge ' + (map[status] || 'badge-sent') + '">' + (icons[status] || '') + ' ' + status + '</span>';
 }
 
-// ── UI ─────────────────────────────────────────────────
 function renderBranchSelector() {
-  document.getElementById('branchSelector').innerHTML = BRANCHES.map((b, i) =>
-    '<button class="branch-chip ' + (i === currentBranch ? 'active' : '') + '" onclick="selectBranch(' + i + ')">' + b + '</button>'
-  ).join('');
+  document.getElementById('branchSelector').innerHTML = BRANCHES.map((b, i) => {
+    const hasPin = !!branchPins[b];
+    return '<button class="branch-chip ' + (i === currentBranch ? 'active' : '') + '" onclick="selectBranch(' + i + ')">' +
+      (hasPin ? '<span class="pin-lock-icon">&#128274;</span>' : '') + b +
+      '</button>';
+  }).join('');
 }
 
 function selectBranch(idx) {
@@ -498,7 +691,6 @@ function renderTable() {
   }).join('');
 }
 
-// ── MODAL ──────────────────────────────────────────────
 function openModal() {
   editingId = null;
   document.getElementById('modalTitleText').textContent = 'New Alteration';
@@ -510,9 +702,11 @@ function openModal() {
 }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
 
-function editEntry(id) {
+async function editEntry(id) {
   const e = allEntries.find(x => x.id === id);
   if (!e) return;
+  const ok = await checkPin(e.branch);
+  if (!ok) return;
   editingId = id;
   document.getElementById('modalTitleText').textContent = 'Edit Alteration';
   document.getElementById('fCustomer').value = e.customer;
@@ -527,6 +721,10 @@ function editEntry(id) {
 }
 
 async function deleteEntry(id) {
+  const e = allEntries.find(x => x.id === id);
+  if (!e) return;
+  const ok = await checkPin(e.branch);
+  if (!ok) return;
   if (!confirm('Delete this alteration record?')) return;
   allEntries = allEntries.filter(x => x.id !== id);
   renderStats(); renderTable();
@@ -568,15 +766,15 @@ async function saveEntry() {
   await pushToSheets('save', entry);
 }
 
-// ── MANAGER DASHBOARD ──────────────────────────────────
 function renderManagerDashboard() {
   document.getElementById('branchOverview').innerHTML = BRANCHES.map((b, i) => {
     const entries = getBranchEntries(i);
     const overdue = entries.filter(isOverdue).length;
     const pending = entries.filter(e => (e.status === 'Sent to Factory' || e.status === 'In Progress') && !isOverdue(e)).length;
     const ready = entries.filter(e => e.status === 'Ready for Pickup').length;
+    const hasPin = !!branchPins[b];
     return '<div class="branch-card" onclick="switchToBranch(' + i + ')">' +
-      '<div class="branch-card-name">' + b + '</div>' +
+      '<div class="branch-card-name">' + b + (hasPin ? ' <span style="font-size:13px;">&#128274;</span>' : '') + '</div>' +
       '<div class="branch-card-stats">' +
       (overdue > 0 ? '<span class="bstat bstat-overdue">&#9888; ' + overdue + ' Overdue</span>' : '') +
       '<span class="bstat bstat-pending">&#128295; ' + pending + ' Pending</span>' +
@@ -624,13 +822,39 @@ function switchMode(mode) {
   if (mode === 'manager') renderManagerDashboard();
 }
 
-// ── AI ─────────────────────────────────────────────────
+async function callClaude(prompt) {
+  if (!anthropicKey) {
+    return { error: '⚠️ No API key set. Enter your Claude API key in the top bar and click Save.' };
+  }
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await res.json();
+    if (d.error) return { error: '✗ API Error: ' + d.error.message };
+    return { text: (d.content && d.content[0] && d.content[0].text) || 'No response.' };
+  } catch (err) {
+    return { error: '✗ Connection failed: ' + err.message };
+  }
+}
+
 async function runAI() {
   const data = getBranchEntries(currentBranch);
   const btn = document.getElementById('aiBtn');
   const out = document.getElementById('aiOutput');
   btn.disabled = true;
-  out.innerHTML = '<div class="ai-loading"><div class="spinner"></div> Analyzing...</div>';
+  out.innerHTML = '<div class="ai-loading"><div class="spinner"></div> Analyzing ' + BRANCHES[currentBranch] + '...</div>';
+
   const overdue = data.filter(isOverdue);
   const ready = data.filter(e => e.status === 'Ready for Pickup');
   const pending = data.filter(e => e.status === 'Sent to Factory' || e.status === 'In Progress');
@@ -639,11 +863,9 @@ async function runAI() {
     '\n\nOverdue:\n' + (overdue.map(e => '- ' + e.customer + ', due ' + e.dueDate + ', ' + daysOverdue(e) + ' days overdue, status: ' + e.status + (e.notes ? ', note: ' + e.notes : '')).join('\n') || 'None') +
     '\n\nReady for pickup:\n' + (ready.map(e => '- ' + e.customer + ' ' + (e.contact ? '(' + e.contact + ')' : '')).join('\n') || 'None') +
     '\n\nProvide a 4-6 line summary:\n1. Status assessment\n2. Urgent actions for overdue items\n3. Customers to contact for pickup\n4. One improvement recommendation\nBe direct and specific. Use bullet points.';
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] }) });
-    const d = await res.json();
-    out.textContent = (d.content && d.content[0] && d.content[0].text) || 'No response.';
-  } catch { out.textContent = 'Error connecting to AI. Please try again.'; }
+
+  const result = await callClaude(prompt);
+  out.textContent = result.error || result.text;
   btn.disabled = false;
 }
 
@@ -652,6 +874,7 @@ async function runManagerAI() {
   const out = document.getElementById('managerAiOutput');
   btn.disabled = true;
   out.innerHTML = '<div class="ai-loading"><div class="spinner"></div> Analyzing all branches...</div>';
+
   const summary = BRANCHES.map((b, i) => {
     const entries = getBranchEntries(i);
     const overdue = entries.filter(isOverdue);
@@ -660,18 +883,20 @@ async function runManagerAI() {
     return 'Branch: ' + b + '\n  Total: ' + entries.length + ' | Overdue: ' + overdue.length + ' | Pending: ' + pending.length + ' | Ready: ' + ready.length +
       '\n  Overdue: ' + (overdue.map(e => e.customer + ' (' + daysOverdue(e) + 'd, ' + e.status + ')').join('; ') || 'None');
   }).join('\n\n');
+
   const prompt = 'You are an area manager assistant for POSH Abaya UAE. Today: ' + todayStr() + '\n\n' + summary +
     '\n\nProvide:\n1. Overall network status\n2. Most critical branch and why\n3. Urgent actions by priority\n4. Pattern observation\n5. One strategic recommendation\nMax 10 lines. Direct and action-oriented.';
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] }) });
-    const d = await res.json();
-    out.textContent = (d.content && d.content[0] && d.content[0].text) || 'No response.';
-  } catch { out.textContent = 'Error connecting to AI. Please try again.'; }
+
+  const result = await callClaude(prompt);
+  out.textContent = result.error || result.text;
   btn.disabled = false;
 }
 
-// ── INIT ───────────────────────────────────────────────
-window.onclick = function(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); };
+window.onclick = function(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+  if (e.target === document.getElementById('pinMgmtOverlay')) closePinMgmt();
+};
+updateApiKeyStatus();
 renderBranchSelector();
 renderStats();
 renderTable();
