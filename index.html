@@ -344,7 +344,8 @@ background: white;
 <div class="section-header" style="margin-bottom:20px;">
 <div class="section-title">Branch Overview</div>
 <div class="mgr-actions-row">
-<button class="btn-mgr" onclick="openPinMgmt()">&#128274; Manage Branch PINs</button>
+<button class="btn-mgr" onclick="openPinMgmt()">&#128274; Branch PINs</button>
+<button class="btn-mgr" onclick="openChangeMgrPin()">&#128081; Change Manager PIN</button>
 </div>
 </div>
 <div class="branch-overview" id="branchOverview"></div>
@@ -409,6 +410,37 @@ background: white;
 </div>
 </div>
 
+<!-- MANAGER PIN MODAL (verify) -->
+<div class="modal-overlay" id="mgrPinOverlay">
+<div class="modal pin-modal">
+<div class="pin-lock-big">&#128081;</div>
+<div class="modal-title" style="text-align:center;margin-bottom:8px;">Manager Access</div>
+<div class="pin-subtitle">Enter the Manager PIN to access the dashboard.</div>
+<input class="pin-field" type="password" id="mgrPinInput" placeholder="&#9679;&#9679;&#9679;&#9679;" maxlength="10" oninput="clearMgrPinError()" onkeydown="if(event.key==='Enter')submitMgrPin()">
+<div class="pin-error-msg" id="mgrPinError"></div>
+<div class="modal-actions" style="justify-content:center;margin-top:20px;">
+<button class="btn-cancel" onclick="cancelMgrPin()">Cancel</button>
+<button class="btn-save" onclick="submitMgrPin()">&#10003; Enter</button>
+</div>
+</div>
+</div>
+
+<!-- MANAGER PIN CREATE/CHANGE MODAL -->
+<div class="modal-overlay" id="mgrPinSetOverlay">
+<div class="modal pin-modal">
+<div class="pin-lock-big">&#128273;</div>
+<div class="modal-title" style="text-align:center;margin-bottom:8px;" id="mgrPinSetTitle">Set Manager PIN</div>
+<div class="pin-subtitle" id="mgrPinSetSubtitle">Create a PIN to protect Manager Dashboard access. All staff will need this PIN to enter.</div>
+<input class="pin-field" type="password" id="mgrPinNew" placeholder="New PIN" maxlength="10" onkeydown="if(event.key==='Enter')document.getElementById('mgrPinConfirm').focus()">
+<input class="pin-field" type="password" id="mgrPinConfirm" placeholder="Confirm PIN" maxlength="10" style="margin-top:10px;" onkeydown="if(event.key==='Enter')saveMgrPin()">
+<div class="pin-error-msg" id="mgrPinSetError"></div>
+<div class="modal-actions" style="justify-content:center;margin-top:20px;">
+<button class="btn-cancel" onclick="cancelMgrPinSet()">Cancel</button>
+<button class="btn-save" onclick="saveMgrPin()">&#128190; Save PIN</button>
+</div>
+</div>
+</div>
+
 <!-- PIN MANAGEMENT MODAL -->
 <div class="modal-overlay" id="pinMgmtOverlay">
 <div class="modal" style="max-width:560px;">
@@ -452,6 +484,83 @@ function updateApiKeyStatus() {
     el.textContent = '○ AI: no key';
     el.className = 'api-key-status unset';
   }
+}
+
+// ── MANAGER PIN ───────────────────────────────────────────────
+let managerPin = localStorage.getItem('posh_manager_pin') || '';
+let _mgrPinResolve = null;
+let _mgrPinSetResolve = null;
+
+function checkManagerPin() {
+  if (!managerPin) {
+    return createManagerPin();
+  }
+  return new Promise(resolve => {
+    _mgrPinResolve = resolve;
+    document.getElementById('mgrPinInput').value = '';
+    document.getElementById('mgrPinError').textContent = '';
+    document.getElementById('mgrPinOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('mgrPinInput').focus(), 150);
+  });
+}
+
+function submitMgrPin() {
+  const entered = document.getElementById('mgrPinInput').value;
+  if (entered === managerPin) {
+    document.getElementById('mgrPinOverlay').classList.remove('open');
+    if (_mgrPinResolve) { _mgrPinResolve(true); _mgrPinResolve = null; }
+  } else {
+    document.getElementById('mgrPinError').textContent = '✗ Incorrect PIN.';
+    document.getElementById('mgrPinInput').value = '';
+    document.getElementById('mgrPinInput').focus();
+  }
+}
+
+function cancelMgrPin() {
+  document.getElementById('mgrPinOverlay').classList.remove('open');
+  if (_mgrPinResolve) { _mgrPinResolve(false); _mgrPinResolve = null; }
+}
+
+function clearMgrPinError() { document.getElementById('mgrPinError').textContent = ''; }
+
+function createManagerPin() {
+  return new Promise(resolve => {
+    _mgrPinSetResolve = resolve;
+    document.getElementById('mgrPinSetTitle').textContent = 'Set Manager PIN';
+    document.getElementById('mgrPinSetSubtitle').textContent = 'Create a PIN to protect the Manager Dashboard. Anyone who wants to access it will need this PIN.';
+    document.getElementById('mgrPinNew').value = '';
+    document.getElementById('mgrPinConfirm').value = '';
+    document.getElementById('mgrPinSetError').textContent = '';
+    document.getElementById('mgrPinSetOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('mgrPinNew').focus(), 150);
+  });
+}
+
+function openChangeMgrPin() {
+  document.getElementById('mgrPinSetTitle').textContent = 'Change Manager PIN';
+  document.getElementById('mgrPinSetSubtitle').textContent = 'Enter a new PIN for Manager Dashboard access.';
+  document.getElementById('mgrPinNew').value = '';
+  document.getElementById('mgrPinConfirm').value = '';
+  document.getElementById('mgrPinSetError').textContent = '';
+  document.getElementById('mgrPinSetOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('mgrPinNew').focus(), 150);
+}
+
+function saveMgrPin() {
+  const p1 = document.getElementById('mgrPinNew').value.trim();
+  const p2 = document.getElementById('mgrPinConfirm').value.trim();
+  if (!p1) { document.getElementById('mgrPinSetError').textContent = 'PIN cannot be empty.'; return; }
+  if (p1 !== p2) { document.getElementById('mgrPinSetError').textContent = '✗ PINs do not match.'; return; }
+  managerPin = p1;
+  localStorage.setItem('posh_manager_pin', p1);
+  document.getElementById('mgrPinSetOverlay').classList.remove('open');
+  if (_mgrPinSetResolve) { _mgrPinSetResolve(true); _mgrPinSetResolve = null; }
+  alert('Manager PIN saved successfully.');
+}
+
+function cancelMgrPinSet() {
+  document.getElementById('mgrPinSetOverlay').classList.remove('open');
+  if (_mgrPinSetResolve) { _mgrPinSetResolve(false); _mgrPinSetResolve = null; }
 }
 
 // ── PIN SYSTEM ────────────────────────────────────────────────
@@ -814,7 +923,11 @@ function switchToBranch(idx) {
   document.getElementById('branchTitle').textContent = BRANCHES[idx] + ' — Alterations';
 }
 
-function switchMode(mode) {
+async function switchMode(mode) {
+  if (mode === 'manager') {
+    const ok = await checkManagerPin();
+    if (!ok) return;
+  }
   currentMode = mode;
   document.querySelectorAll('.mode-btn').forEach((b, i) => b.classList.toggle('active', (i === 0 && mode === 'branch') || (i === 1 && mode === 'manager')));
   document.getElementById('page-branch').classList.toggle('active', mode === 'branch');
@@ -895,13 +1008,14 @@ async function runManagerAI() {
 window.onclick = function(e) {
   if (e.target === document.getElementById('modalOverlay')) closeModal();
   if (e.target === document.getElementById('pinMgmtOverlay')) closePinMgmt();
+  if (e.target === document.getElementById('mgrPinOverlay')) cancelMgrPin();
+  if (e.target === document.getElementById('mgrPinSetOverlay')) cancelMgrPinSet();
 };
+
 updateApiKeyStatus();
-renderBranchSelector();
-renderStats();
-renderTable();
-document.getElementById('branchTitle').textContent = BRANCHES[0] + ' — Alterations';
 initSetup();
+renderBranchSelector();
+selectBranch(0);
 </script>
 </body>
 </html>
