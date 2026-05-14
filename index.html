@@ -471,7 +471,7 @@ function renderTable() {
   const search = (document.getElementById('searchInput').value || '').toLowerCase();
   const filter = document.getElementById('filterStatus').value;
   let filtered = data.filter(e => {
-    const ms = !search || (e.customer || '').toLowerCase().includes(search) || (e.invoice || '').toLowerCase().includes(search) || (e.contact || '').toLowerCase().includes(search) || (e.phone || '').toLowerCase().includes(search);
+    const ms = !search || String(e.customer || '').toLowerCase().includes(search) || String(e.invoice || '').toLowerCase().includes(search) || String(e.contact || '').toLowerCase().includes(search) || String(e.phone || '').toLowerCase().includes(search);
     const mf = !filter || e.status === filter;
     return ms && mf;
   });
