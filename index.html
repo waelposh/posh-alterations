@@ -738,36 +738,33 @@ async function pushToSheets(action, payload) {
   if (!scriptUrl) return true;
   setSyncStatus('syncing', 'Saving...');
   try {
-    let body;
+    let params;
     if (action === 'add' || action === 'update') {
-      // Map frontend field names → Apps Script field names (flat structure)
-      body = {
+      params = new URLSearchParams({
         action,
-        id:              payload.id,
-        branch:          payload.branch,
-        customerName:    payload.customer,
-        contactNumber:   payload.contact,
-        invoiceNumber:   payload.invoice,
-        itemDescription: payload.item,
-        dateSent:        payload.dateSent,
-        dueDate:         payload.dueDate,
-        status:          payload.status,
-        notes:           payload.notes
-      };
-    } else if (action === 'delete') {
-      body = { action, id: payload };
+        id:              payload.id             || '',
+        branch:          payload.branch          || '',
+        customerName:    payload.customer        || '',
+        contactNumber:   payload.contact         || '',
+        invoiceNumber:   payload.invoice         || '',
+        itemDescription: payload.item            || '',
+        dateSent:        payload.dateSent        || '',
+        dueDate:         payload.dueDate         || '',
+        status:          payload.status          || '',
+        notes:           payload.notes           || ''
+      });
     } else {
-      body = { action, id: payload };
+      params = new URLSearchParams({ action, id: payload });
     }
-    // Fire-and-forget with no-cors to bypass Apps Script redirect CORS issues
-    fetch(scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(body)
-    });
-    setSyncStatus('ok', 'Saved — ' + new Date().toLocaleTimeString());
-    return true;
+    const res = await fetch(scriptUrl + '?' + params.toString());
+    const d = await res.json();
+    if (d.success) {
+      setSyncStatus('ok', 'Saved to Sheets ✓ — ' + new Date().toLocaleTimeString());
+      return true;
+    } else {
+      setSyncStatus('err', 'Sheets error: ' + (d.error || 'unknown'));
+      return false;
+    }
   } catch (err) {
     setSyncStatus('err', 'Network error — saved locally');
     return false;
@@ -777,20 +774,16 @@ async function pushToSheets(action, payload) {
 async function pushSettingsToSheets() {
   if (!scriptUrl) return;
   try {
-    fetch(scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'saveSettings',
-        settings: { managerPin: managerPin || '', branchPins: branchPins }
-      })
+    const params = new URLSearchParams({
+      action: 'saveSettings',
+      managerPin: managerPin || '',
+      branchPins: JSON.stringify(branchPins)
     });
+    await fetch(scriptUrl + '?' + params.toString());
   } catch (err) {
-    // silent — settings saved locally at minimum
+    // silent
   }
 }
-
 function manualSync() { loadFromSheets(); }
 
 // ── DATA ──────────────────────────────────────────────────────
