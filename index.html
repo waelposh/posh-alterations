@@ -695,13 +695,15 @@ async function loadFromSheets() {
       }));
       // Apply PIN settings from Sheets (overrides localStorage)
       if (d.settings) {
-        if (d.settings.managerPin) {
-          managerPin = d.settings.managerPin;
+                if (d.settings.managerPin !== undefined && d.settings.managerPin !== '') {
+          managerPin = String(d.settings.managerPin);
           localStorage.setItem('posh_manager_pin', managerPin);
         }
         if (d.settings.branchPins) {
-          branchPins = d.settings.branchPins;
-          localStorage.setItem('posh_pins', JSON.stringify(branchPins));
+          // Ensure all branch PINs are strings too
+          const bp = d.settings.branchPins;
+          Object.keys(bp).forEach(k => { bp[k] = String(bp[k]); });
+          branchPins = bp;   localStorage.setItem('posh_pins', JSON.stringify(branchPins));
         }
       }
       setSyncStatus('ok', 'Synced with Google Sheets — ' + new Date().toLocaleTimeString());
