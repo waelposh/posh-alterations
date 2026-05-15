@@ -664,14 +664,14 @@ function initSetup() {
   }
 }
 
-// ── SYNC STATUS ──────────────────────────────────────────────
+// ── SYNC STATUS ────────────────────────────────────────────────
 function setSyncStatus(state, text) {
   const dot = document.getElementById('syncDot');
   dot.className = 'sync-dot ' + state;
   document.getElementById('syncStatus').textContent = text;
 }
 
-// ── GOOGLE SHEETS ────────────────────────────────────────────
+// ── GOOGLE SHEETS ─────────────────────────────────────────────
 async function loadFromSheets() {
   if (!scriptUrl) return;
   setSyncStatus('syncing', 'Syncing with Google Sheets...');
@@ -719,7 +719,27 @@ async function pushToSheets(action, payload) {
   if (!scriptUrl) return true;
   setSyncStatus('syncing', 'Saving...');
   try {
-    const body = action === 'save' ? { action, entry: payload } : { action, id: payload };
+    let body;
+    if (action === 'add' || action === 'update') {
+      // Map frontend field names → Apps Script field names (flat structure)
+      body = {
+        action,
+        id:              payload.id,
+        branch:          payload.branch,
+        customerName:    payload.customer,
+        contactNumber:   payload.contact,
+        invoiceNumber:   payload.invoice,
+        itemDescription: payload.item,
+        dateSent:        payload.dateSent,
+        dueDate:         payload.dueDate,
+        status:          payload.status,
+        notes:           payload.notes
+      };
+    } else if (action === 'delete') {
+      body = { action, id: payload };
+    } else {
+      body = { action, id: payload };
+    }
     const res = await fetch(scriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -757,7 +777,7 @@ async function pushSettingsToSheets() {
 
 function manualSync() { loadFromSheets(); }
 
-// ── DATA ─────────────────────────────────────────────────────
+// ── DATA ──────────────────────────────────────────────────────
 function getBranchEntries(branchIdx) {
   return allEntries.filter(e => e.branch === BRANCHES[branchIdx]);
 }
@@ -786,7 +806,7 @@ function statusBadge(status, overdue) {
   return '<span class="badge ' + (map[status] || 'badge-sent') + '">' + (icons[status] || '') + ' ' + status + '</span>';
 }
 
-// ── UI ───────────────────────────────────────────────────────
+// ── UI ────────────────────────────────────────────────────────
 function renderBranchSelector() {
   document.getElementById('branchSelector').innerHTML = BRANCHES.map((b, i) => {
     const hasPin = !!branchPins[b];
@@ -849,7 +869,7 @@ function renderTable() {
   }).join('');
 }
 
-// ── MODAL ────────────────────────────────────────────────────
+// ── MODAL ─────────────────────────────────────────────────────
 function openModal() {
   editingId = null;
   document.getElementById('modalTitleText').textContent = 'New Alteration';
@@ -918,14 +938,15 @@ async function saveEntry() {
     allEntries.push(entry);
   }
 
+  const sheetsAction = editingId ? 'update' : 'add';
   closeModal();
   renderStats(); renderTable();
   document.getElementById('saveBtn').disabled = false;
   document.getElementById('saveBtn').textContent = 'Save Alteration';
-  await pushToSheets('save', entry);
+  await pushToSheets(sheetsAction, entry);
 }
 
-// ── MANAGER DASHBOARD ────────────────────────────────────────
+// ── MANAGER DASHBOARD ─────────────────────────────────────────
 function renderManagerDashboard() {
   document.getElementById('branchOverview').innerHTML = BRANCHES.map((b, i) => {
     const entries = getBranchEntries(i);
@@ -1057,18 +1078,12 @@ async function runManagerAI() {
   btn.disabled = false;
 }
 
-// ── INIT ──────────────────────────────────────────────────────
-window.onclick = function(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-  if (e.target === document.getElementById('pinMgmtOverlay')) closePinMgmt();
-  if (e.target === document.getElementById('mgrPinOverlay')) cancelMgrPin();
-  if (e.target === document.getElementById('mgrPinSetOverlay')) cancelMgrPinSet();
+window.onload = function() {
+  renderBranchSelector();
+  selectBranch(0);
+  updateApiKeyStatus();
+  initSetup();
 };
-
-updateApiKeyStatus();
-initSetup();
-renderBranchSelector();
-selectBranch(0);
 </script>
 </body>
 </html>
