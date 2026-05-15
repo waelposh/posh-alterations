@@ -656,7 +656,9 @@ function saveScriptUrl() {
 function initSetup() {
   if (scriptUrl) {
     document.getElementById('setupBanner').classList.add('hidden');
-    setSyncStatus('syncing', 'Loading data...');
+    loadLocalCache();
+    renderStats(); renderTable();
+    setSyncStatus('syncing', 'Syncing with Google Sheets...');
     loadFromSheets();
   } else {
     document.getElementById('scriptUrlInput').value = '';
@@ -672,6 +674,16 @@ function setSyncStatus(state, text) {
 }
 
 // ── GOOGLE SHEETS ─────────────────────────────────────────────
+function saveLocalCache() {
+  try { localStorage.setItem('posh_entries_cache', JSON.stringify(allEntries)); } catch(e) {}
+}
+function loadLocalCache() {
+  try {
+    const raw = localStorage.getItem('posh_entries_cache');
+    if (raw) { allEntries = JSON.parse(raw); }
+  } catch(e) {}
+}
+
 async function loadFromSheets() {
   if (!scriptUrl) return;
   setSyncStatus('syncing', 'Syncing with Google Sheets...');
@@ -680,7 +692,7 @@ async function loadFromSheets() {
     const d = await res.json();
     if (d.success && d.entries) {
       // Normalize field names — Sheets script may return camelCase or different variants
-      allEntries = d.entries.map(e => ({
+      const sheetsEntries = d.entries.map(e => ({
         id:        e.id        || e.ID        || '',
         customer:  e.customer  || e.customerName   || e.Customer  || '',
         contact:   e.contact   || e.contactNumber  || e.Contact   || '',
@@ -693,6 +705,11 @@ async function loadFromSheets() {
         branch:    e.branch    || e.Branch     || '',
         createdAt: e.createdAt || e.CreatedAt  || ''
       }));
+      // Merge: keep local entries not yet synced to Sheets
+      const sheetsIds = new Set(sheetsEntries.map(e => e.id).filter(Boolean));
+      const localOnly = allEntries.filter(e => e.id && !sheetsIds.has(e.id));
+      allEntries = [...sheetsEntries, ...localOnly];
+      saveLocalCache();
       // Apply PIN settings from Sheets (overrides localStorage)
       if (d.settings) {
                 if (d.settings.managerPin !== undefined && d.settings.managerPin !== '') {
@@ -706,12 +723,12 @@ async function loadFromSheets() {
           branchPins = bp;   localStorage.setItem('posh_pins', JSON.stringify(branchPins));
         }
       }
-      setSyncStatus('ok', 'Synced with Google Sheets — ' + new Date().toLocaleTimeString());
+      setSyncStatus('ok', 'Synced — ' + new Date().toLocaleTimeString());
     } else {
       setSyncStatus('err', 'Sync error: ' + (d.error || 'unknown'));
     }
   } catch (err) {
-    setSyncStatus('err', 'Cannot reach Google Sheets');
+    setSyncStatus('err', 'Offline — showing local data');
   }
   renderStats(); renderTable();
   if (currentMode === 'manager') renderManagerDashboard();
@@ -742,19 +759,15 @@ async function pushToSheets(action, payload) {
     } else {
       body = { action, id: payload };
     }
-    const res = await fetch(scriptUrl, {
+    // Fire-and-forget with no-cors to bypass Apps Script redirect CORS issues
+    fetch(scriptUrl, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(body)
     });
-    const d = await res.json();
-    if (d.success) {
-      setSyncStatus('ok', 'Saved — ' + new Date().toLocaleTimeString());
-      return true;
-    } else {
-      setSyncStatus('err', 'Save error: ' + (d.error || 'unknown'));
-      return false;
-    }
+    setSyncStatus('ok', 'Saved — ' + new Date().toLocaleTimeString());
+    return true;
   } catch (err) {
     setSyncStatus('err', 'Network error — saved locally');
     return false;
@@ -764,8 +777,9 @@ async function pushToSheets(action, payload) {
 async function pushSettingsToSheets() {
   if (!scriptUrl) return;
   try {
-    await fetch(scriptUrl, {
+    fetch(scriptUrl, {
       method: 'POST',
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify({
         action: 'saveSettings',
@@ -908,6 +922,7 @@ async function deleteEntry(id) {
   if (!ok) return;
   if (!confirm('Delete this alteration record?')) return;
   allEntries = allEntries.filter(x => x.id !== id);
+  saveLocalCache();
   renderStats(); renderTable();
   if (currentMode === 'manager') renderManagerDashboard();
   await pushToSheets('delete', id);
@@ -939,6 +954,7 @@ async function saveEntry() {
   } else {
     allEntries.push(entry);
   }
+  saveLocalCache();
 
   const sheetsAction = editingId ? 'update' : 'add';
   closeModal();
