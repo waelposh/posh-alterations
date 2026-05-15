@@ -679,7 +679,20 @@ async function loadFromSheets() {
     const res = await fetch(scriptUrl, { method: 'GET' });
     const d = await res.json();
     if (d.success && d.entries) {
-      allEntries = d.entries;
+      // Normalize field names — Sheets script may return camelCase or different variants
+      allEntries = d.entries.map(e => ({
+        id:        e.id        || e.ID        || '',
+        customer:  e.customer  || e.customerName   || e.Customer  || '',
+        contact:   e.contact   || e.contactNumber  || e.Contact   || '',
+        invoice:   e.invoice   || e.invoiceNumber  || e.Invoice   || '',
+        item:      e.item      || e.itemDescription || e.Item     || '',
+        dateSent:  e.dateSent  || e.dateSentToFactory || e.DateSent || '',
+        dueDate:   e.dueDate   || e.DueDate    || '',
+        status:    e.status    || e.Status     || '',
+        notes:     e.notes     || e.Notes      || e.remarks     || '',
+        branch:    e.branch    || e.Branch     || '',
+        createdAt: e.createdAt || e.CreatedAt  || ''
+      }));
       // Apply PIN settings from Sheets (overrides localStorage)
       if (d.settings) {
         if (d.settings.managerPin) {
@@ -1037,22 +1050,25 @@ async function runManagerAI() {
   }).join('\n\n');
 
   const prompt = 'You are an area manager assistant for POSH Abaya UAE. Today: ' + todayStr() + '\n\n' + summary +
-    '\n\nProvide:\n1. Overall network status\n2. Most critical branch and why\n3. Top 3 actions needed\n4. One systemic recommendation\nBe concise and direct.';
+    '\n\nProvide:\n1. Overall network status\n2. Most critical branch and why\n3. Urgent actions by priority\n4. Pattern observation\n5. One strategic recommendation\nMax 10 lines. Direct and action-oriented.';
 
   const result = await callClaude(prompt);
   out.textContent = result.error || result.text;
   btn.disabled = false;
 }
 
-// ── INIT ─────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  updateApiKeyStatus();
-  renderBranchSelector();
-  renderStats();
-  renderTable();
-  selectBranch(0);
-  initSetup();
-});
+// ── INIT ──────────────────────────────────────────────────────
+window.onclick = function(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+  if (e.target === document.getElementById('pinMgmtOverlay')) closePinMgmt();
+  if (e.target === document.getElementById('mgrPinOverlay')) cancelMgrPin();
+  if (e.target === document.getElementById('mgrPinSetOverlay')) cancelMgrPinSet();
+};
+
+updateApiKeyStatus();
+initSetup();
+renderBranchSelector();
+selectBranch(0);
 </script>
 </body>
 </html>
