@@ -704,7 +704,7 @@ async function loadFromSheets() {
         notes:     e.notes     || e.Notes      || e.remarks     || '',
         branch:    e.branch    || e.Branch     || '',
         createdAt: e.createdAt || e.CreatedAt  || ''
-      }));
+      })).filter(e => e.id || e.customer || e.invoice);
       // Merge: keep local entries not yet synced to Sheets
       const sheetsIds = new Set(sheetsEntries.map(e => e.id).filter(Boolean));
       const localOnly = allEntries.filter(e => e.id && !sheetsIds.has(e.id));
